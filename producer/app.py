@@ -5,13 +5,21 @@ import asyncio
 
 names = ['Tina', 'Bob', 'Francis', 'Tom', 'Rebeka']
 
-class NamedEntity(faust.Record):
+class Entity(faust.Record, polymorphic_fields=True):
     id: str
+    events: list
+
+class NamedEntity(Entity):
     name: str
     value: int
 
 class EntityEvent(faust.Record, polymorphic_fields=True):
     id: str
+
+    def mutate(self, e: Entity):
+        e = self.apply(e)
+        e.events.append(self)
+        return e
 
     def apply(self, e: NamedEntity):
         raise NotImplementedError
@@ -21,7 +29,9 @@ class Created(EntityEvent):
     value: int
 
     def apply(self, e: NamedEntity):
-        return NamedEntity(id=self.id, name=self.name, value=self.value)
+        return NamedEntity(id=self.id, name=self.name, value=self.value, events=[self])
+
+    
 
 class NameUpdated(EntityEvent):
     name: str
