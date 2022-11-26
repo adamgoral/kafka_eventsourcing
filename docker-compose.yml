@@ -1,0 +1,34 @@
+version: "3.2"
+services:
+  zookeeper_es:
+    container_name: zookeeper_es
+    image: wurstmeister/zookeeper
+    ports:
+      - 2181:2181
+    restart: unless-stopped
+  kafka_es:
+    container_name: kafka_es
+    image: wurstmeister/kafka
+    ports:
+      - 9092:9290
+    environment:
+      - KAFKA_ADVERTISED_HOST_NAME=kafka_es
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper_es:2181
+    restart: unless-stopped
+    depends_on:
+      - zookeeper_es
+  producer_es:
+    container_name: producer_es
+    build: producer/.
+    depends_on:
+      - kafka_es
+    restart: unless-stopped
+  consumer_es:
+    container_name: consumer_es
+    build: consumer/.
+    ports:
+      - 6066:6066
+    depends_on:
+      - kafka_es
+      - producer_es
+    restart: unless-stopped
