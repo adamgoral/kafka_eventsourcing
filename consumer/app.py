@@ -49,7 +49,7 @@ class ValueUpdate(EntityEvent):
 app = faust.App('consumer-app', broker='kafka_es://9092')
 app_events = app.topic('app-events', key_type=str, value_type=EntityEvent)
 entity_states = app.Table('entity-states', default=None)
-
+name_totals = app.Table('name-totals', default=int)
 
 @app.agent(app_events)
 async def observe_app_events(events):
@@ -57,6 +57,20 @@ async def observe_app_events(events):
         print(f'received event {type(event)} {event.id}')
         existing = entity_states.get(event.id)
         entity_states[event.id] = event.mutate(existing)
+
+@app.agent(app_events)
+async def observe_created_name_totals(events):
+    async for event in events.filter(lambda e: type(e) in [Created]).group_by(EntityEvent.id):
+        print(f'received event affecting name {type(event)}')
+        name_totals[event.name] += 1
+
+@app.agent(app_events)
+async def observe_name_update_totals(events):
+    async for event in events.filter(lambda e: type(e) in [NameUpdated]).group_by(EntityEvent.id):
+        print(f'received event affecting name {type(event)}')
+        existing = entity_states.get(event.id)
+        name_totals[existing.name] -= 1
+        name_totals[event.name] += 1
 
 @app.page('/entities')
 async def get_entities(self, request):
@@ -78,3 +92,10 @@ async def get_entity(self, request, id):
                 'events': events
             })
     return self.json(['Not found'])
+
+@app.page('/names')
+async def get_name_totals(self, request):
+    result = {}
+    for k, v in name_totals.items():
+        result[k] = {k: v}
+    return self.json(result)
