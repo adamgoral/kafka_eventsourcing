@@ -35,6 +35,7 @@ class Created(EntityEvent):
 
 class NameUpdated(EntityEvent):
     name: str
+    old_name: str
 
     def apply(self, e: NamedEntity):
         e.name = self.name
@@ -62,17 +63,18 @@ async def creator(app):
 
 @app.agent(app_events)
 async def randomly_change_name_after_create(events):
-    async for event in events.filter(lambda e: type(e) == Created).group_by(EntityEvent.id):
+    async for event in events.filter(lambda e: type(e) == Created):
         if rnd.random() < 0.5:
             new_name = rnd.choice(names)
-            entity_event = NameUpdated(id = event.id, name=new_name)
-            await asyncio.sleep(1)
-            print(f'sending event {type(entity_event)} {event.id}')
-            await app_events.send(key=event.id, value=entity_event)
+            if event.name != new_name:
+                entity_event = NameUpdated(id = event.id, name=new_name, old_name=event.name)
+                await asyncio.sleep(1)
+                print(f'sending event {type(entity_event)} {event.id}')
+                await app_events.send(key=event.id, value=entity_event)
 
 @app.agent(app_events)
 async def randomly_change_value_after_create(events):
-    async for event in events.filter(lambda e: type(e) == Created).group_by(EntityEvent.id):
+    async for event in events.filter(lambda e: type(e) == Created):
         if rnd.random() < 0.5:
             entity_event = ValueUpdate(id = event.id, value=rnd.randint(0, 100))
             await asyncio.sleep(1)
