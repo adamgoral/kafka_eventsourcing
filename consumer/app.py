@@ -1,10 +1,11 @@
 import faust
 import json
 from typing import List
+import os
 
 from kafkaes.domain.entities import *
 
-app = faust.App('consumer-app', broker='kafka_es://9092')
+app = faust.App('consumer-app', broker=os.environ['KAFKA_BROKER'])
 app_events = app.topic('app-events', key_type=str, value_type=EntityEvent)
 entity_states = app.Table('entity-states', default=None)
 name_total_updates = app.topic('name-total-updates', key_type=str, value_type=NameTotalUpdate)

@@ -2,12 +2,13 @@ import faust
 import random as rnd
 import uuid
 import asyncio
+import os
 
 from kafkaes.domain.entities import *
 
 names = ['Tina', 'Bob', 'Francis', 'Tom', 'Rebeka']
 
-app = faust.App('producer-app', broker='kafka_es://9092')
+app = faust.App('producer-app', broker=os.environ['KAFKA_BROKER'])
 app_events = app.topic('app-events', key_type=str, value_type=EntityEvent)
 
 @app.timer(interval=1.0)

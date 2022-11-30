@@ -22,6 +22,8 @@ services:
     build:
       context: .
       dockerfile: ./producer/Dockerfile.dev
+    environment:
+      - KAFKA_BROKER=kafka_es://9092
     depends_on:
       - kafka_es
     restart: unless-stopped
@@ -30,6 +32,8 @@ services:
     build:
       context: .
       dockerfile: ./consumer/Dockerfile.dev
+    environment:
+      - KAFKA_BROKER=kafka_es://9092
     ports:
       - 6066:6066
     depends_on:
