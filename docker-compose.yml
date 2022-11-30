@@ -10,7 +10,7 @@ services:
     container_name: kafka_es
     image: wurstmeister/kafka
     ports:
-      - 9092:9290
+      - 9092:9092
     environment:
       - KAFKA_ADVERTISED_HOST_NAME=kafka_es
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper_es:2181
