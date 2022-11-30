@@ -2,10 +2,14 @@ FROM python:3.8-slim
 
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
+COPY ./producer/requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY ./producer .
+
+COPY ./domain ./domain
+
+RUN pip install -e ./domain
 
 CMD ["faust", "-A", "app", "worker", "-l", "info"]

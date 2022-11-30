@@ -1,4 +1,4 @@
-version: "3.2"
+version: "3.7"
 services:
   zookeeper_es:
     container_name: zookeeper_es
@@ -19,13 +19,17 @@ services:
       - zookeeper_es
   producer_es:
     container_name: producer_es
-    build: producer/.
+    build:
+      context: .
+      dockerfile: ./producer/Dockerfile.dev
     depends_on:
       - kafka_es
     restart: unless-stopped
   consumer_es:
     container_name: consumer_es
-    build: consumer/.
+    build:
+      context: .
+      dockerfile: ./consumer/Dockerfile.dev
     ports:
       - 6066:6066
     depends_on:
