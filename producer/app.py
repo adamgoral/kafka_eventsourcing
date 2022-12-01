@@ -26,7 +26,7 @@ async def randomly_change_name_after_create(events):
         if rnd.random() < 0.5:
             new_name = rnd.choice(names)
             if event.name != new_name:
-                entity_event = NameUpdated(id = event.id, name=new_name, old_name=event.name)
+                entity_event = NameUpdated(id = event.id, name=new_name)
                 await asyncio.sleep(1)
                 print(f'sending event {type(entity_event)} {event.id}')
                 await app_events.send(key=event.id, value=entity_event)
@@ -35,7 +35,7 @@ async def randomly_change_name_after_create(events):
 async def randomly_change_value_after_create(events):
     async for event in events.filter(lambda e: type(e) == Created):
         if rnd.random() < 0.5:
-            entity_event = ValueUpdate(id = event.id, value=rnd.randint(0, 100))
+            entity_event = ValueUpdated(id = event.id, value=rnd.randint(0, 100))
             await asyncio.sleep(1)
             print(f'sending event {type(entity_event)} {event.id}')
             await app_events.send(key=event.id, value=entity_event)
