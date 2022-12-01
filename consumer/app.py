@@ -7,7 +7,7 @@ from kafkaes.domain.entities import *
 
 app = faust.App('consumer-app', broker=os.environ['KAFKA_BROKER'])
 app_events = app.topic('app-events', key_type=str, value_type=EntityEvent)
-entity_states = app.Table('entity-states', default=None)
+named_aggregates = app.Table('named-aggregates', default=None)
 name_total_updates = app.topic('name-total-updates', key_type=str, value_type=NameTotalUpdated)
 name_totals = app.Table('name-totals', default=int)
 
@@ -19,7 +19,7 @@ class UnexpectedEvent(Exception):
         self.expected_type = expected_type
         self.actual = actual
 
-def entity_state_default(event: Created):
+def named_aggregate_default(event: Created):
     if type(event) != Created:
         raise UnexpectedEvent(expected_type=Created, actual=event)
     else:
@@ -35,8 +35,8 @@ def get_or_default(table: faust.Table, key, default_factory):
 async def observe_app_events(events):
     async for event in events.group_by(EntityEvent.id):
         print(f'received event {type(event)} {event.id}')
-        existing = get_or_default(entity_states, event.id, lambda: entity_state_default(event))
-        entity_states[event.id] = existing.mutate(event)
+        existing = get_or_default(named_aggregates, event.id, lambda: named_aggregate_default(event))
+        named_aggregates[event.id] = existing.mutate(event)
 
 """
 @app.agent(app_events)
@@ -59,14 +59,14 @@ async def observe_name_update_totals(events):
 @app.page('/entities')
 async def get_entities(self, request):
     result = {}
-    for k, v in entity_states.items():
+    for k, v in named_aggregates.items():
         result[k] = {'name': v.name, 'value': v.value}
     return self.json(result)
 
 @app.page('/entities/{id}')
-@app.table_route(table=entity_states, match_info='id')
+@app.table_route(table=named_aggregates, match_info='id')
 async def get_entity(self, request, id):
-    v: NamedAggregate = entity_states.get(id)
+    v: NamedAggregate = named_aggregates.get(id)
     if v:
         events = [{'type': str(type(e)) for e in v.events}]
         return self.json(
