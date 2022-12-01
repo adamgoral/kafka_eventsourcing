@@ -19,18 +19,24 @@ class UnexpectedEvent(Exception):
         self.expected_type = expected_type
         self.actual = actual
 
+def entity_state_default(event: Created):
+    if type(event) != Created:
+        raise UnexpectedEvent(expected_type=Created, actual=event)
+    else:
+        return NamedAggregate.from_event(event)
+
+def get_or_default(table: faust.Table, key, default_factory):
+    existing = table.get(key)
+    if existing:
+        return existing
+    return default_factory()
+
 @app.agent(app_events)
 async def observe_app_events(events):
     async for event in events.group_by(EntityEvent.id):
         print(f'received event {type(event)} {event.id}')
-        existing = entity_states.get(event.id)
-        if not existing:
-            if type(event) != Created:
-                raise UnexpectedEvent(expected_type=Created, actual=event)
-            else:
-                entity_states[event.id] = NamedAggregate.from_event(event)
-        else:
-            entity_states[event.id] = existing.mutate(event)
+        existing = get_or_default(entity_states, event.id, lambda: entity_state_default(event))
+        entity_states[event.id] = existing.mutate(event)
 
 """
 @app.agent(app_events)
