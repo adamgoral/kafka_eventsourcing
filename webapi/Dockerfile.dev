@@ -1,0 +1,14 @@
+FROM python:3.9-slim
+
+WORKDIR /usr/src/app
+
+COPY ./webapi/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY ./webapi .
+
+COPY ./domain ./domain
+
+RUN pip install -e ./domain
+
+CMD ["faust", "-A", "app", "worker", "-l", "info"]
