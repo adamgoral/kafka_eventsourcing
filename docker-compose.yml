@@ -34,9 +34,18 @@ services:
       dockerfile: ./consumer/Dockerfile.dev
     environment:
       - KAFKA_BROKER=kafka_es://9092
+    depends_on:
+      - kafka_es
+    restart: unless-stopped
+  webapi_es:
+    container_name: webapi_es
+    build:
+      context: .
+      dockerfile: ./webapi/Dockerfile.dev
+    environment:
+      - KAFKA_BROKER=kafka_es://9092
     ports:
       - 6066:6066
     depends_on:
       - kafka_es
-      - producer_es
     restart: unless-stopped
