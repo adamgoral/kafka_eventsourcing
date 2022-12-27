@@ -9,7 +9,6 @@ spec:
   ports:
   - port: 2181
     targetPort: 2181
-    protocol: TCP
 
 ---
 apiVersion: v1
@@ -22,7 +21,20 @@ spec:
   ports:
   - port: 9092
     targetPort: 9092
-    protocol: TCP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapi-es
+spec:
+  selector:
+    app: webapi-es
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 6066
+
 
 ---
 apiVersion: apps/v1
@@ -109,6 +121,31 @@ spec:
       - name: consumer-es
         image: kafka_eventsourcing-consumer_es
         imagePullPolicy: IfNotPresent
+        env:
+          - name: KAFKA_BROKER
+            value: kafka://kafka-es:9092
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapi-es
+spec:
+  selector:
+    matchLabels:
+      app: webapi-es
+  template:
+    metadata:
+      labels:
+        app: webapi-es
+    spec:
+      containers:
+      - name: webapi-es
+        image: kafka_eventsourcing-webapi_es
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 6066
+            protocol: TCP
         env:
           - name: KAFKA_BROKER
             value: kafka://kafka-es:9092
