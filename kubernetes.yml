@@ -15,10 +15,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: kafkaes
+  name: kafka-es
 spec:
   selector:
-    app: kafkaes
+    app: kafka-es
   ports:
   - port: 9092
     targetPort: 9092
@@ -48,24 +48,24 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kafkaes
+  name: kafka-es
 spec:
   selector:
     matchLabels:
-      app: kafkaes
+      app: kafka-es
   template:
     metadata:
       labels:
-        app: kafkaes
+        app: kafka-es
     spec:
       containers:
-      - name: kafkaes
+      - name: kafka-es
         image: wurstmeister/kafka
         ports:
           - containerPort: 9092
         env:
           - name: KAFKA_ADVERTISED_HOST_NAME
-            value: kafkaes
+            value: kafka-es
           - name: KAFKA_ZOOKEEPER_CONNECT
             value: zookeeper-es:2181
 
@@ -89,7 +89,7 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
           - name: KAFKA_BROKER
-            value: kafkaes://9092
+            value: kafka://kafka-es:9092
 
 ---
 apiVersion: apps/v1
@@ -111,4 +111,4 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
           - name: KAFKA_BROKER
-            value: kafkaes://9092
+            value: kafka://kafka-es:9092
