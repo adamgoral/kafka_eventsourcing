@@ -8,11 +8,26 @@ on:
 
 jobs:
 
-  build:
-
+  build_consumer_es:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file ./consumer/Dockerfile.dev --tag my-image-name:$(date +%s)
+    - name: Build consumer_es Docker image
+      run: docker build . --file ./consumer/Dockerfile.dev --tag consumer_es:$(date +%s)
+
+  build_producer_es:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build producer_es Docker image
+      run: docker build . --file ./producer/Dockerfile.dev --tag producer_es:$(date +%s)
+
+  build_webapi_es:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build webapi_es Docker image
+      run: docker build . --file ./webapi/Dockerfile.dev --tag webapi_es:$(date +%s)
