@@ -37,4 +37,5 @@ jobs:
           python -m pip install build --user
       - name: Build package
         run: |
+          cd domain
           python -m build --sdist --wheel --outdir dist/
