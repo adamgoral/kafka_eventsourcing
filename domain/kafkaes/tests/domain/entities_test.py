@@ -1,6 +1,7 @@
 import pytest
 from kafkaes.domain.entities import *
 
+@pytest.mark.asyncio
 async def test_event_aggregate_mismatch():
     aggregate = NamedAggregate(id='123', name='ddd', value=123)
     event = NameUpdated(id='456', name='abc')
