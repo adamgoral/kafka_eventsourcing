@@ -8,18 +8,21 @@ async def test_event_aggregate_mismatch():
     with pytest.raises(AggregateEventIdMismatch):
         aggregate.mutate(event)
 
+@pytest.mark.asyncio
 async def test_name_update():
     aggregate = NamedAggregate(id='123', name='ddd', value=123)
     event = NameUpdated(id='123', name='abc')
     aggregate.mutate(event)
     assert aggregate.name == event.name
 
+@pytest.mark.asyncio
 async def test_value_update():
     aggregate = NamedAggregate(id='123', name='ddd', value=123)
     event = ValueUpdated(id='123', value=662)
     aggregate.mutate(event)
     assert aggregate.value == event.value
 
+@pytest.mark.asyncio
 async def test_created():
     event = Created(id='123', name='abc', value=123)
     aggregate = NamedAggregate.from_event(event)
